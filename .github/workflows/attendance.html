@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Office Attendance</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f2f2f2;
+text-align:center;
+}
+
+.box{
+background:white;
+padding:25px;
+margin:30px auto;
+width:380px;
+border-radius:10px;
+box-shadow:0 0 10px gray;
+}
+
+select,input,button{
+padding:10px;
+margin:8px;
+width:230px;
+}
+
+table{
+margin:auto;
+margin-top:20px;
+border-collapse:collapse;
+}
+
+th,td{
+border:1px solid #ccc;
+padding:6px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h2 id="monthTitle"></h2>
+
+<select id="employee">
+
+<option>Abhishek Mali</option>
+<option>Vaishnavi Mandke</option>
+<option>Ramesh Salvi</option>
+<option>Nagendra Sharma</option>
+<option>Anil Pingulakar</option>
+<option>Prafull Waghmare</option>
+<option>Vaibhav Nevarekar</option>
+<option>Dharmik Nanda</option>
+
+</select>
+
+<br>
+
+<input type="date" id="date">
+
+<br>
+
+<select id="type">
+<option>Morning IN</option>
+<option>Evening OUT</option>
+</select>
+
+<br>
+
+<input type="time" id="time">
+
+<br>
+
+<button onclick="saveAttendance()">Save Attendance</button>
+
+<br>
+
+<button onclick="downloadCSV()">Download Excel</button>
+
+</div>
+
+<h3>Attendance Records</h3>
+
+<table id="table">
+<tr>
+<th>Employee</th>
+<th>Date</th>
+<th>Day</th>
+<th>Type</th>
+<th>Time</th>
+<th>Edit</th>
+</tr>
+</table>
+
+<script>
+
+let password="admin123";
+
+let records=[];
+
+let today=new Date();
+
+let monthName=today.toLocaleString('default',{month:'long'});
+let year=today.getFullYear();
+
+document.getElementById("monthTitle").innerHTML=
+monthName+" "+year+" Attendance";
+
+let yyyy=today.getFullYear();
+let mm=String(today.getMonth()+1).padStart(2,'0');
+let dd=String(today.getDate()).padStart(2,'0');
+
+let todayDate=yyyy+"-"+mm+"-"+dd;
+
+let dateInput=document.getElementById("date");
+
+dateInput.value=todayDate;
+
+dateInput.max=todayDate;
+
+function saveAttendance(){
+
+let emp=document.getElementById("employee").value;
+let type=document.getElementById("type").value;
+let date=document.getElementById("date").value;
+let time=document.getElementById("time").value;
+
+if(time==""){
+alert("Select time");
+return;
+}
+
+let d=new Date(date);
+
+if(d.getDay()==0){
+alert("Sunday Holiday");
+return;
+}
+
+let day=d.toLocaleDateString('en-US',{weekday:'long'});
+
+let exists=records.some(function(row){
+return row.emp==emp && row.date==date && row.type==type;
+});
+
+if(exists){
+alert("Attendance already marked");
+return;
+}
+
+let record={
+emp:emp,
+date:date,
+day:day,
+type:type,
+time:time
+};
+
+records.push(record);
+
+displayTable();
+
+}
+
+function displayTable(){
+
+let table=document.getElementById("table");
+
+table.innerHTML="<tr><th>Employee</th><th>Date</th><th>Day</th><th>Type</th><th>Time</th><th>Edit</th></tr>";
+
+records.forEach(function(r,i){
+
+table.innerHTML+=
+"<tr>"+
+"<td>"+r.emp+"</td>"+
+"<td>"+r.date+"</td>"+
+"<td>"+r.day+"</td>"+
+"<td>"+r.type+"</td>"+
+"<td>"+r.time+"</td>"+
+"<td><button onclick='editRecord("+i+")'>Edit</button></td>"+
+"</tr>";
+
+});
+
+}
+
+function editRecord(i){
+
+let pass=prompt("Enter password to edit");
+
+if(pass!==password){
+
+alert("Wrong Password");
+
+return;
+
+}
+
+let newTime=prompt("Enter new time");
+
+if(newTime){
+
+records[i].time=newTime;
+
+displayTable();
+
+}
+
+}
+
+function downloadCSV(){
+
+let csv="Month : "+monthName+" "+year+"\n\n";
+
+csv+="Employee,Date,Day,Type,Time\n";
+
+records.forEach(function(r){
+
+csv+=r.emp+","+r.date+","+r.day+","+r.type+","+r.time+"\n";
+
+});
+
+let blob=new Blob([csv],{type:'text/csv'});
+
+let link=document.createElement("a");
+
+link.href=URL.createObjectURL(blob);
+
+link.download="attendance_"+monthName+"_"+year+".csv";
+
+link.click();
+
+}
+
+</script>
+
+</body>
+</html>
